@@ -22,6 +22,3 @@ A => !(!B + C)
 	# by a newline is used
 
 ?GVX # Queries : What are G, V and X ?
-
-A AND B OR C
-A OR B AND C

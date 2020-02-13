@@ -1,8 +1,8 @@
 #!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
-
-import sys
 import argparse
+import sys
+from error import Error, ParseError
 from parse import Parse
 from expertSystem import ExpertSystem
 
@@ -14,9 +14,13 @@ class Controller:
 		self.pathToFile = None
 
 	def run(self):
-		self.arg()
 		controller = self
+		self.arg()
 		Parse(controller)
+		#todo handler error
+		#todo enum operator
+		#todo class token
+		#todo solve
 
 	def arg(self):
 		parser = argparse.ArgumentParser(description="resolve logical expression")

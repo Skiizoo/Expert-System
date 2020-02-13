@@ -1,6 +1,8 @@
 import argparse
 from utils import exitWithErrors
 from step import Step
+from error import ParseError
+from rule import Rule
 import re
 
 
@@ -11,61 +13,82 @@ class Parse:
 		self.rules = []
 		self.facts = []
 		self.queries = []
-		self.getParams()
+		self.get_params()
 
-	def getparams(self):
-		try:
-			with open(self.file) as f:
-				step_parse = Step.expr
-				file = [x for x in re.sub(r'(#.*)|([\t ])', '', f.read()).split('\n') if x]
-				for line in file:
-					if step_parse is Step.expr:
-						if True:  # if valid rules
-							self.rules += [Rule(line)]
-						else:
-							step_parse = next(step_parse)
-					if step_parse is Step.facts:
-						if facts := True:  # if valid fact
-							step_parse = next(step_parse)
-						else:
-							raise Error()
-					if step_parse is Step.queries:  # if valid queries
-						if queries := True:
-							step_parse = next(step_parse)
-							continue
-						else:
-							raise Error()
-					if step_parse is None:
-						raise Error('Error=', 'Message')
-		except Error as error:
-			print(error.message)
-			exit()
+	def get_params(self):
+		with open(self.controller.pathToFile) as f:
+			current_step = Step.rules
+			file = [x for x in re.sub(r'(#.*)|([\t ])', '', f.read()).split('\n') if x]
 
-	def valid_rules(self, rules, i):
-		prev = None
-		count = 0
+			for i, line in enumerate(file):
+				print(line)
+				if current_step is None:
+					raise ParseError('stepParse == None')
+				if current_step is Step.rules:
+					if self.valid_rule(line, i):
+						self.rules += [Rule(line)]
+					else:
+						current_step = next(current_step)
+				if current_step is Step.facts:
+					if not self.valid_fact(line, i):
+						raise ParseError("invalid facts")
+					self.facts = re.sub(r'=', '', line)
+					current_step = next(current_step)
+				elif current_step is Step.queries:
+					if not self.valid_query(line, i):
+						raise ParseError("invalid queries")
+					self.queries = re.sub(r'\?', '', line)
+					current_step = next(current_step)
+
+	def valid_rule(self, line, i) -> bool:
 		op = ['+', '|', '^']
 		par = ['(', ')']
+		error = "Wrong rule format at line " + str(i)
 
-		for j, char in enumerate(rules):
-			if self.is_upper_alpha(char) and self.is_upper_alpha(prev):
-				exitWithErrors("Wrong format at line " + str(i))
-			elif char not in op and char not in par and not self.is_upper_alpha(char) and char != '!':
-				exitWithErrors("Wrong format at line " + str(i))
-			elif char == par[0]:
-				count += 1
-				if self.is_upper_alpha(prev):
-					exitWithErrors("Wrong format at line " + str(i))
-			elif char == par[1]:
-				if count <= 0 or (not self.is_upper_alpha(prev) and prev != par[1]):
-					exitWithErrors("Wrong format at line " + str(i))
-				count -= 1
-			elif char in op and ((not self.is_upper_alpha(prev) and not prev == par[1]) or j == len(rules)):
-				exitWithErrors("Wrong format at line " + str(i))
-			elif char == '!' and (self.is_upper_alpha(prev) or j == len(rules)):
-				exitWithErrors("Wrong format at line " + str(i))
+		if self.valid_fact(line, i):
+			return False
+		if self.valid_query(line, i):
+			raise ParseError('Facts missing')
 
-			prev = char
+		rules = line.split('=>')
+		if len(rules) != 2:
+			raise ParseError(error)
+		for rule in rules:
+			prev = None
+			count = 0
+			for j, char in enumerate(rule):
+				if self.is_upper_alpha(char) and self.is_upper_alpha(prev):
+					raise ParseError('1')
+				elif char not in op and char not in par and not self.is_upper_alpha(char) and char != '!':
+					raise ParseError('2')
+				elif char == par[0]:
+					count += 1
+					if self.is_upper_alpha(prev):
+						raise ParseError('3')
+				elif char == par[1]:
+					if count <= 0 or (not self.is_upper_alpha(prev) and prev != par[1]):
+						raise ParseError('4')
+					count -= 1
+				elif char in op and ((not self.is_upper_alpha(prev) and not prev == par[1]) or j == len(line)):
+					raise ParseError('5')
+				elif char == '!' and (self.is_upper_alpha(prev) or j == len(rule)):
+					raise ParseError('6')
+				prev = char
+		return True
+
+	@staticmethod
+	def valid_fact(line, i) -> bool:
+		#todo améliorer la regex -> valid if only one each [A-Z]
+		if re.match(r'=[A-Z]*', line):
+			return True
+		return False
+
+	@staticmethod
+	def valid_query(line, i) -> bool:
+		#todo améliorer la regex -> valid if only one each [A-Z]
+		if re.match(r'\?[A-Z]*', line):
+			return True
+		return False
 
 	@staticmethod
 	def is_upper_alpha(char):
