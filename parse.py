@@ -1,5 +1,5 @@
 import argparse
-from step import Step
+from lovni import Step
 from error import ParseError
 from rule import Rule
 import re
