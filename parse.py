@@ -1,7 +1,5 @@
-import argparse
-from lovni import Step
 from error import ParseError
-from rule import Rule
+from enumerate import Step
 import re
 
 
@@ -13,6 +11,12 @@ class Parse:
 		self.facts = []
 		self.queries = []
 		self.get_params()
+		for rule in self.rules:
+			print(rule)
+		print(self.facts)
+		print(self.queries)
+		print("___Parsing Done___\n\n\n")
+
 
 	def get_params(self):
 		with open(self.controller.pathToFile) as f:
@@ -24,7 +28,7 @@ class Parse:
 					raise ParseError('stepParse == None')
 				if current_step is Step.rules:
 					if self.valid_rule(line, i):
-						self.rules += [Rule(line)]
+						self.rules.append(re.findall(r'=>|.', line))
 					else:
 						current_step = next(current_step)
 				if current_step is Step.facts:

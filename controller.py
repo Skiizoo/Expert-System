@@ -15,12 +15,9 @@ class Controller:
 
 	def run(self):
 		controller = self
-		self.arg()
-		Parse(controller)
-		#todo handler error
-		#todo enum operator
-		#todo class token
-		#todo solve
+		controller.arg()
+		parser = Parse(controller)
+		ExpertSystem(parser)
 
 	def arg(self):
 		parser = argparse.ArgumentParser(description="resolve logical expression")
