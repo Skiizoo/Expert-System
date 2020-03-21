@@ -1,4 +1,6 @@
 from enumerate import Type
+from display import display_infos
+from error import SolveError
 
 
 class Token:
@@ -18,7 +20,7 @@ class Token:
         if value not in cls.__instances.keys():
             cls.__instances[value] = object.__new__(cls)
             cls.__instances[value].type = type_token
-            cls.__instances[value].rules = [None]
+            cls.__instances[value].rules = [[None, None]]
             cls.__instances[value].__value = None
         return cls.__instances[value]
 
@@ -45,69 +47,59 @@ class Token:
 
     @property
     def value(self):
-        #print('getter', self, self.__value)
         if len(self.rules) == 1 and self.__value is None:
+            display_infos("Token.py", "@property getter", "50", "Token " + self.char + " is False")
             return False
         elif len(self.rules) == 1:
+            display_infos("Token.py", "@property getter", "50", "Token " + self.char + " is " + str(self.__value))
             return self.__value
+        display_infos("Token.py", "@property getter", "50", "We don't know yet the value of Token " + self.char)
         return self.calc()
 
     @value.setter
     def value(self, new_value):
-        print('setter start', self, self.__value, new_value)
         if self.__value is not None and self.__value != new_value:
-            print('lksfk;skdf;sf')
-            #todo: gestion erreur + debug
-            exit(self)
+            raise SolveError("Token.py", "@property setter", "62", "Conflict value for Token " + self.char)
         self.__value = new_value
+        display_infos("Token.py", "@property setter", "64", "Token " + self.char + " is now " + str(new_value))
         if len(self.rules) > 1:
             self.__value = self.calc()
-        #print('setter end', self, self.__value)
 
-    def calc_expression(self):
-        #print('calc_expression', self)
+    def calc_expression(self, str_expr):
+        display_infos("Token.py", "calc_expression", "68", "Solving Token " + self.char + " of expression " + str_expr)
         if self == '!':
-            return not self.right.calc_expression()
+            return not self.right.calc_expression(str_expr)
         elif self == '|':
-            return self.left.calc_expression() or self.right.calc_expression()
+            return self.left.calc_expression(str_expr) or self.right.calc_expression(str_expr)
         elif self == '+':
-            return self.left.calc_expression() and self.right.calc_expression()
+            return self.left.calc_expression(str_expr) and self.right.calc_expression(str_expr)
         elif self == '^':
-            return self.left.calc_expression() is not self.right.calc_expression()
+            return self.left.calc_expression(str_expr) is not self.right.calc_expression(str_expr)
         else:
             return self.value
 
-    def calc_conclusion(self, value=True):
+    def calc_conclusion(self, str_ccl, value=True):
+        display_infos("Token.py", "calc_conclusion", "77", "Solving Token " + self.char + " of conclusion " + str_ccl)
         # todo: or et xor
-        print('calc_conclu', self)
         if self == '+':
-            self.right.calc_conclusion()
-            self.left.calc_conclusion()
+            self.right.calc_conclusion(str_ccl)
+            self.left.calc_conclusion(str_ccl)
         elif self == '!':
-            self.right.calc_conclusion(value=False)
+            self.right.calc_conclusion(str_ccl, not value)
         else:
             self.value = value
 
     def calc(self):
-        print('calc', self)
+        display_infos("Token.py", "calc", "89", "Looking for Token " + self.char + "'s value")
         token = self.rules.pop(0)
-        if token is not None and token.left.calc_expression() is True:
-            token.right.calc_conclusion()
+        if token[0] is not None:
+            display_infos("Token.py", "calc", "91", "Looking into Token " + self.char + "'s rule: " + token[1])
+            str_rule = token[1].split('=>')
+        if token[0] is not None and token[0].left.calc_expression(str_rule[0]) is True:
+            token[0].right.calc_conclusion(str_rule[1])
         elif self.value is True:
-            token.right.calc_conclusion()
+            token[0].right.calc_conclusion(str_rule[1])
         return self.value
-
-
-
-
-
-
-
-
-
-
-
-
 
     # def print(self):
     #     queue = [self]

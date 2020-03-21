@@ -11,11 +11,9 @@ class Rule:
         ccl_letters = re.findall(r'[A-Z]', ccl)
         impl_token = list(filter(lambda x: x == '=>', self.rule))[0]
         for letter in ccl_letters:
-            Token(letter).rules.insert(0, impl_token)
+            Token(letter).rules.insert(0, [impl_token, ''.join(rule)])
         self.output = []
         self.shunting_yard()
-        #impl_token.print()
-        #exit()
 
     def __str__(self):
         return self.output
