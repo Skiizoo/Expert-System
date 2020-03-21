@@ -48,12 +48,12 @@ class Token:
     @property
     def value(self):
         if len(self.rules) == 1 and self.__value is None:
-            display_infos("Token.py", "@property getter", "50", "Token " + self.char + " is False")
+            display_infos("Token.py", "@property getter", "51", "Token " + self.char + " is False")
             return False
         elif len(self.rules) == 1:
-            display_infos("Token.py", "@property getter", "50", "Token " + self.char + " is " + str(self.__value))
+            display_infos("Token.py", "@property getter", "54", "Token " + self.char + " is " + str(self.__value))
             return self.__value
-        display_infos("Token.py", "@property getter", "50", "We don't know yet the value of Token " + self.char)
+        display_infos("Token.py", "@property getter", "56", "We don't know yet the value of Token " + self.char)
         return self.calc()
 
     @value.setter
@@ -66,7 +66,7 @@ class Token:
             self.__value = self.calc()
 
     def calc_expression(self, str_expr):
-        display_infos("Token.py", "calc_expression", "68", "Solving Token " + self.char + " of expression " + str_expr)
+        display_infos("Token.py", "calc_expression", "69", "Solving Token " + self.char + " of expression " + str_expr)
         if self == '!':
             return not self.right.calc_expression(str_expr)
         elif self == '|':
@@ -79,7 +79,7 @@ class Token:
             return self.value
 
     def calc_conclusion(self, str_ccl, value=True):
-        display_infos("Token.py", "calc_conclusion", "77", "Solving Token " + self.char + " of conclusion " + str_ccl)
+        display_infos("Token.py", "calc_conclusion", "82", "Solving Token " + self.char + " of conclusion " + str_ccl)
         # todo: or et xor
         if self == '+':
             self.right.calc_conclusion(str_ccl)
@@ -90,10 +90,10 @@ class Token:
             self.value = value
 
     def calc(self):
-        display_infos("Token.py", "calc", "89", "Looking for Token " + self.char + "'s value")
+        display_infos("Token.py", "calc", "93", "Looking for Token " + self.char + "'s value")
         token = self.rules.pop(0)
         if token[0] is not None:
-            display_infos("Token.py", "calc", "91", "Looking into Token " + self.char + "'s rule: " + token[1])
+            display_infos("Token.py", "calc", "96", "Looking into Token " + self.char + "'s rule: " + token[1])
             str_rule = token[1].split('=>')
         if token[0] is not None and token[0].left.calc_expression(str_rule[0]) is True:
             token[0].right.calc_conclusion(str_rule[1])

@@ -15,7 +15,7 @@ class Parse:
         self.get_params()
 
     def get_params(self):
-        display_infos("Parse.py", "get_params", "17", "Opening of the " + self.controller.pathToFile + " file")
+        display_infos("Parse.py", "get_params", "18", "Opening of the " + self.controller.pathToFile + " file")
         with open(self.controller.pathToFile) as f:
             current_step = Step.rules
             file = [x for x in re.sub(r'(#.*)|([\t ])', '', f.read()).split('\n') if x]
@@ -28,7 +28,7 @@ class Parse:
                     if self.valid_rule(line, i):
                         rule = re.findall(r'=>|.', line)
                         self.rules.append(rule)
-                        display_infos("Parse.py", "get_params", "27", "Rule: {}".format(rule))
+                        display_infos("Parse.py", "get_params", "31", "Rule: {}".format(rule))
                     else:
                         current_step = next(current_step)
                 if current_step is Step.facts:
@@ -36,14 +36,14 @@ class Parse:
                         raise ParseError(self.controller.pathToFile, line, i, "Facts isn't well computed. Must be "
                                                                               "like r'^=(?!.*?(.).*?\\1)[A-Z]*$'")
                     self.facts = re.sub(r'=', '', line)
-                    display_infos("Parse.py", "get_params", "42", "Facts: " + self.facts)
+                    display_infos("Parse.py", "get_params", "39", "Facts: " + self.facts)
                     current_step = next(current_step)
                 elif current_step is Step.queries:
                     if not self.valid_query(line, i):
                         raise ParseError(self.controller.pathToFile, line, i, "Queries isn't well computed. Must be "
                                                                               "like r'^\\?(?!.*?(.).*?\\1)[A-Z]*$'")
                     self.queries = re.sub(r'\?', '', line)
-                    display_infos("Parse.py", "get_params", "43", "Queries: " + self.queries)
+                    display_infos("Parse.py", "get_params", "46", "Queries: " + self.queries)
                     current_step = next(current_step)
 
     def valid_rule(self, line, i) -> bool:
