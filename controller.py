@@ -22,12 +22,16 @@ class Controller:
             print(e)
         except SolveError as e:
             print(e)
+        #todo gestion erreur générique (fichier, etc..)
 
     def arg(self):
         parser = argparse.ArgumentParser(description="resolve logical expression")
         parser.add_argument('pathToFile', help='File to parse')
         parser.add_argument("-d", "--debug", help="display optional information during the process",
                             action="store_true")
+        parser.add_argument("-t", "--tree", help="display graphic representation of Token",
+                            action="store_true")
         args = parser.parse_args()
         display.debug = args.debug
+        display.tree = args.tree
         self.pathToFile = args.pathToFile

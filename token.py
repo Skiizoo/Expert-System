@@ -1,6 +1,17 @@
 from enumerate import Type
-from display import display_infos
+from display import display_infos, display_tree, display_treeV2
 from error import SolveError
+
+
+def my_max(tab):
+    maximum = 0
+    if not tab:
+        return maximum
+    for t in tab:
+        for j in t:
+            if maximum < j[1]:
+                maximum = j[1]
+    return maximum
 
 
 class Token:
@@ -12,16 +23,20 @@ class Token:
     def __new__(cls, value):
         type_token = Type.from_value(value)
         if type_token is not Type.Letter:
+            display_infos("Token.py", "__new__", "15", "Creation of specific Token operator " + value)
             instance = object.__new__(cls)
             instance.type = type_token
             if type_token is Type.Operator:
                 instance.precedence = ['<=>', '=>', '^', '|', '+', '!'].index(value)
             return instance
         if value not in cls.__instances.keys():
+            display_infos("Token.py", "__new__", "22", "Creation of global Token operator " + value)
             cls.__instances[value] = object.__new__(cls)
             cls.__instances[value].type = type_token
             cls.__instances[value].rules = [[None, None]]
             cls.__instances[value].__value = None
+        else:
+            display_infos("Token.py", "__new__", "28", "Global Token operator " + value + " already exists")
         return cls.__instances[value]
 
     def __gt__(self, other):
@@ -48,25 +63,25 @@ class Token:
     @property
     def value(self):
         if len(self.rules) == 1 and self.__value is None:
-            display_infos("Token.py", "@property getter", "51", "Token " + self.char + " is False")
+            display_infos("Token.py", "@property getter", "55", "Token " + self.char + " is False")
             return False
         elif len(self.rules) == 1:
-            display_infos("Token.py", "@property getter", "54", "Token " + self.char + " is " + str(self.__value))
+            display_infos("Token.py", "@property getter", "58", "Token " + self.char + " is " + str(self.__value))
             return self.__value
-        display_infos("Token.py", "@property getter", "56", "We don't know yet the value of Token " + self.char)
+        display_infos("Token.py", "@property getter", "60", "We don't know yet the value of Token " + self.char)
         return self.calc()
 
     @value.setter
     def value(self, new_value):
         if self.__value is not None and self.__value != new_value:
-            raise SolveError("Token.py", "@property setter", "62", "Conflict value for Token " + self.char)
+            raise SolveError("Token.py", "@property setter", "66", "Conflict value for Token " + self.char)
         self.__value = new_value
-        display_infos("Token.py", "@property setter", "64", "Token " + self.char + " is now " + str(new_value))
+        display_infos("Token.py", "@property setter", "68", "Token " + self.char + " is now " + str(new_value))
         if len(self.rules) > 1:
             self.__value = self.calc()
 
     def calc_expression(self, str_expr):
-        display_infos("Token.py", "calc_expression", "69", "Solving Token " + self.char + " of expression " + str_expr)
+        display_infos("Token.py", "calc_expression", "73", "Solving Token " + self.char + " of expression " + str_expr)
         if self == '!':
             return not self.right.calc_expression(str_expr)
         elif self == '|':
@@ -79,7 +94,7 @@ class Token:
             return self.value
 
     def calc_conclusion(self, str_ccl, value=True):
-        display_infos("Token.py", "calc_conclusion", "82", "Solving Token " + self.char + " of conclusion " + str_ccl)
+        display_infos("Token.py", "calc_conclusion", "86", "Solving Token " + self.char + " of conclusion " + str_ccl)
         # todo: or et xor
         if self == '+':
             self.right.calc_conclusion(str_ccl)
@@ -90,10 +105,10 @@ class Token:
             self.value = value
 
     def calc(self):
-        display_infos("Token.py", "calc", "93", "Looking for Token " + self.char + "'s value")
+        display_infos("Token.py", "calc", "97", "Looking for Token " + self.char + "'s value")
         token = self.rules.pop(0)
         if token[0] is not None:
-            display_infos("Token.py", "calc", "96", "Looking into Token " + self.char + "'s rule: " + token[1])
+            display_infos("Token.py", "calc", "100", "Looking into Token " + self.char + "'s rule: " + token[1])
             str_rule = token[1].split('=>')
         if token[0] is not None and token[0].left.calc_expression(str_rule[0]) is True:
             token[0].right.calc_conclusion(str_rule[1])
@@ -101,55 +116,22 @@ class Token:
             token[0].right.calc_conclusion(str_rule[1])
         return self.value
 
-    # def print(self):
-    #     queue = [self]
-    #     len_three = self.len()
-    #     size = [len_three]
-    #     tab = {1: 1, 2: 2, 3: 4, 4: 8, 5: 16, 6: 32}
-    #     min_tab = [tab[len_three]]
-    #     nb_tab = 0
-    #     while len(queue):
-    #         min_ta = min_tab[0]
-    #         print(min_ta)
-    #         height = size[0]
-    #         token = queue[0]
-    #         len_tab = tab[height]
-    #         print('\t' * len_tab, end='')
-    #         nb_tab += len_tab
-    #         print(token.char, end='')
-    #         print('\t' * len_tab, end='')
-    #         nb_tab += len_tab
-    #         queue.pop(0)
-    #         size.pop(0)
-    #         min_tab.pop(0)
-    #         if token == '!':
-    #             queue.append(token.right)
-    #             size.append(height - 1)
-    #             min_tab.append(min_ta - len_tab / 2)
-    #         elif token.type is Type.Operator:
-    #             queue.append(token.left)
-    #             size.append(height - 1)
-    #             min_tab.append(min_ta - len_tab / 2)
-    #             queue.append(token.right)
-    #             size.append(height - 1)
-    #             min_tab.append(min_ta - len_tab / 2)
-    #         else:
-    #             pass
-    #         if height not in size:
-    #             nb_tab = 0
-    #             print('')
-    #
-    # @staticmethod
-    # def contains_len(queue, len) -> bool:
-    #     for token in queue:
-    #         if token.len() == len:
-    #             return True
-    #     return False
-    #
-    # def len(self):
-    #     if self == '!':
-    #         return 1 + self.right.len()
-    #     elif self.type is Type.Operator:
-    #         return 1 + max(self.right.len(), self.left.len())
-    #     else:
-    #         return 1
+    def display(self, rules, depth, token="", tab=[], init=False):
+        if token is not None:
+            if depth > len(tab):
+                tab.append([])
+            if depth == 0 and len(rules) > 1:
+                self.display(rules, 1, rules.pop(0)[0], tab, True)
+            elif token.type is Type.Operator:
+                self.display(rules, depth + 1, token.right, tab, True)
+                # display_tree(token.char, depth)
+                tab[depth - 1].append([token.char, my_max(tab) + 1])
+                self.display(rules, depth + 1, token.left, tab, True)
+                if depth == 1 and len(rules) > 1:
+                    self.display(rules, 1, rules.pop(0)[0], tab, True)
+            elif token.type is Type.Letter:
+                # display_tree(token.char, depth)
+                tab[depth - 1].append([token.char, my_max(tab) + 1])
+        # todo correct multiple print
+        if init is False:
+            display_treeV2(tab)

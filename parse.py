@@ -15,7 +15,7 @@ class Parse:
         self.get_params()
 
     def get_params(self):
-        display_infos("Parse.py", "get_params", "18", "Opening of the " + self.controller.pathToFile + " file")
+        display_infos("Parse.py", "get_params", "18", "Opening the " + self.controller.pathToFile + " file")
         with open(self.controller.pathToFile) as f:
             current_step = Step.rules
             file = [x for x in re.sub(r'(#.*)|([\t ])', '', f.read()).split('\n') if x]

@@ -1,17 +1,20 @@
 from token import Token
 from enumerate import Type
+from display import display_infos
 import re
 
 
 class Rule:
 
     def __init__(self, rule):
+        str_rule = ''.join(rule)
+        display_infos("Rule.py", "__init__", "11", "Creation of the rule " + str_rule)
         self.rule = list(map(Token, rule))
-        ccl = ''.join(rule).split('=>')[1]
+        ccl = str_rule.split('=>')[1]
         ccl_letters = re.findall(r'[A-Z]', ccl)
         impl_token = list(filter(lambda x: x == '=>', self.rule))[0]
         for letter in ccl_letters:
-            Token(letter).rules.insert(0, [impl_token, ''.join(rule)])
+            Token(letter).rules.insert(0, [impl_token, str_rule])
         self.output = []
         self.shunting_yard()
 
@@ -21,6 +24,7 @@ class Rule:
     def shunting_yard(self):
         operator = []
 
+        display_infos("Rule.py", "shunting_yard", "27", "Starting ShuntingYard")
         for token in self.rule:
             if token.type is Type.Letter:
                 self.output.append(token)

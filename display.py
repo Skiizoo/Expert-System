@@ -1,4 +1,5 @@
 debug = None
+tree = None
 
 
 class Bcolors:
@@ -47,3 +48,17 @@ def display_solve_error(file, func, line, txt):
             '{BOLDnRED} Line: {END} {FAIL} {LINE:2} {END} {TXT} ').format(
         BOLDnRED=Bcolors.BOLDnRED, END=Bcolors.END, FAIL=Bcolors.FAIL, TYPE="SOLVING ERROR", FILE=file, FUNC=func,
         LINE=line, TXT=txt)
+
+
+def display_tree(token, depth):
+    if tree is True:
+        print('{BOLD}{TOKEN:>{DEPTH}}{END}'.format(BOLD=Bcolors.BOLD, END=Bcolors.END, TOKEN=token, DEPTH=(depth+1)*3))
+
+
+def display_treeV2(tab):
+    print("display")
+    if tree is True:
+        for row in tab:
+            maximum = max(row, key=lambda x: x[1])[1]
+            print(maximum)
+            # print('\n'.join([''.join(['{TOKEN:>{POS}}'.format(TOKEN=item[0], POS=item[1]*2) for item in row]) for row in tab]))
