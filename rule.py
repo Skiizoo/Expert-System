@@ -23,7 +23,6 @@ class Rule:
 
     def shunting_yard(self):
         operator = []
-
         display_infos("Rule.py", "shunting_yard", "27", "Starting ShuntingYard")
         for token in self.rule:
             if token.type is Type.Letter:

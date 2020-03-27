@@ -1,0 +1,7 @@
+A=> B|C
+B=>D
+
+=A
+?BCDE
+
+#E is True

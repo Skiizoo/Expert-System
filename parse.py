@@ -3,7 +3,7 @@ from error import ParseError
 from enumerate import Step
 from display import display_infos
 
-
+#todo: double implication
 class Parse:
 
     def __init__(self, controller):
