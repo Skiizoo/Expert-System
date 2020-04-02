@@ -18,4 +18,5 @@ class ExpertSystem:
 			rules = Token(query).rules
 			Token(query).display(rules, 0)
 			value = Token(query).value
+			value = value if value is not None else False
 			display_result(query, value)

@@ -1,7 +1,3 @@
-A=> B|C
-B=>D
-
-=A
-?BCDE
-
-#E is True
+E=>(A+B)+!(A+C)
+=E
+?ABC

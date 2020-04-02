@@ -18,7 +18,6 @@ class Type(Enum):
         else:
             return cls.Operator
 
-
 class Step(Enum):
     rules = 0
     facts = 1

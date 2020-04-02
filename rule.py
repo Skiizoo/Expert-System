@@ -11,7 +11,7 @@ class Rule:
         display_infos("Rule.py", "__init__", "11", "Creation of the rule " + str_rule)
         self.rule = list(map(Token, rule))
         ccl = str_rule.split('=>')[1]
-        ccl_letters = re.findall(r'[A-Z]', ccl)
+        ccl_letters = set(re.findall(r'[A-Z]', ccl))
         impl_token = list(filter(lambda x: x == '=>', self.rule))[0]
         for letter in ccl_letters:
             Token(letter).rules.insert(0, [impl_token, str_rule])

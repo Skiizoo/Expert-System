@@ -1,6 +1,7 @@
 from enumerate import Type
 from display import display_infos, display_tree, display_treeV2
 from error import SolveError
+import re
 
 
 def my_max(tab):
@@ -62,10 +63,7 @@ class Token:
 
     @property
     def value(self):
-        if len(self.rules) == 1 and self.__value is None:
-            display_infos("Token.py", "@property getter", "55", "Token " + self.char + " is False")
-            return False
-        elif len(self.rules) == 1:
+        if len(self.rules) == 1:
             display_infos("Token.py", "@property getter", "58", "Token " + self.char + " is " + str(self.__value))
             return self.__value
         display_infos("Token.py", "@property getter", "60", "We don't know yet the value of Token " + self.char)
@@ -73,84 +71,145 @@ class Token:
 
     @value.setter
     def value(self, new_value):
-        if self.__value is not None and self.__value != "Ambigous" and self.__value != new_value:
-            raise SolveError("Token.py", "@property setter", "66", "Conflict value for Token " + self.char)
-        if new_value == "Ambigous" and self.__value is not None:
+        print(self, new_value, self.__value)
+        if new_value == "Ambiguous" and self.__value is not None:
             pass
         else:
+            if self.__value is not None and self.__value != "Ambiguous" and self.__value != new_value:
+                print("error")
+                raise SolveError("Token.py", "@property setter", "66", "Conflict value for Token " + self.char)
             self.__value = new_value
-        display_infos("Token.py", "@property setter", "68", "Token " + self.char + " is now " + str(new_value))
-        if len(self.rules) > 1:
-            self.__value = self.calc()
+            display_infos("Token.py", "@property setter", "68", "Token " + self.char + " is now " + str(new_value))
+            if len(self.rules) > 1:
+                self.__value = self.calc()
 
     def calc_expression(self, str_expr):
         display_infos("Token.py", "calc_expression", "73", "Solving Token " + self.char + " of expression " + str_expr)
         if self == '!':
-            return not self.right.calc_expression(str_expr)
+            right = self.right.calc_expression(str_expr)
+            if right == "Ambiguous":
+                return "Ambiguous"
+            return not right
         elif self == '|':
             left = self.left.calc_expression(str_expr)
             right = self.right.calc_expression(str_expr)
-
-            return self.left.calc_expression(str_expr) or self.right.calc_expression(str_expr)
+            if left is True or right is True:
+                return True
+            if left == "Ambiguous" or right == "Ambiguous":
+                return "Ambiguous"
+            return False
         elif self == '+':
-            return self.left.calc_expression(str_expr) and self.right.calc_expression(str_expr)
+            left = self.left.calc_expression(str_expr)
+            right = self.right.calc_expression(str_expr)
+            if left == "Ambiguous" or right == "Ambiguous":
+                return "Ambiguous"
+            return left and right
         elif self == '^':
-            return self.left.calc_expression(str_expr) is not self.right.calc_expression(str_expr)
+            left = self.left.calc_expression(str_expr)
+            right = self.right.calc_expression(str_expr)
+            if left == "Ambiguous" or right == "Ambiguous":
+                return "Ambiguous"
+            return left is not right
         else:
             value = self.value
-            return False if value == 'Ambigous' else value
+            return value if value is not None else False
 
-    def calc_conclusion(self, str_ccl, value=True):
-        display_infos("Token.py", "calc_conclusion", "86", "Solving Token " + self.char + " of conclusion " + str_ccl)
+    def calc_conclusion(self, str_ccl):
+        display_infos("Token.py", "calc_conclusion", "73", "Solving Token " + self.char + " of expression " + str_ccl)
+        if self == '!':
+            right = self.right.calc_conclusion(str_ccl)
+            if right is None:
+                return right
+            return not right
+        elif self == '|':
+            left = self.left.calc_conclusion(str_ccl)
+            right = self.right.calc_conclusion(str_ccl)
+            if left is True or right is True:
+                return True
+            if left is None or right is None:
+                return None
+            return False
+        elif self == '+':
+            left = self.left.calc_conclusion(str_ccl)
+            right = self.right.calc_conclusion(str_ccl)
+            if left is None or right is None:
+                return None
+            return left and right
+        elif self == '^':
+            left = self.left.calc_conclusion(str_ccl)
+            right = self.right.calc_conclusion(str_ccl)
+            if left is None or right is None:
+                return None
+            return left is not right
+        else:
+            value = self.value
+            return value if value != "Ambiguous" else None
+
+    def solve(self, str_ccl, value=True):
+        display_infos("Token.py", "solve", "86", "Solving Token " + self.char + " of conclusion " + str_ccl)
         # todo: xor
         if self == '+':
             if value is False:
-                if self.right.calc_expression(str_ccl) is True:
-                    self.left.calc_conclusion(str_ccl, value)
-                elif self.left.calc_expression(str_ccl) is True:
-                    self.right.calc_conclusion(str_ccl, value)
+                if self.right.calc_conclusion(str_ccl) is True:
+                    self.left.solve(str_ccl, value)
+                elif self.left.calc_conclusion(str_ccl) is True:
+                    self.right.solve(str_ccl, value)
                 else:
-                    self.left.calc_conclusion(str_ccl, "Ambigous")
-                    self.right.calc_conclusion(str_ccl,"Ambigous")
+                    self.left.solve(str_ccl, "Ambiguous")
+                    self.right.solve(str_ccl, "Ambiguous")
             else:
-                self.right.calc_conclusion(str_ccl, value)
-                self.left.calc_conclusion(str_ccl, value)
+                self.right.solve(str_ccl, value)
+                self.left.solve(str_ccl, value)
         elif self == '|':
-            #A = > !(B | C | E)
             if value is False:
-                self.right.calc_conclusion(str_ccl, value)
-                self.left.calc_conclusion(str_ccl, value)
+                self.right.solve(str_ccl, value)
+                self.left.solve(str_ccl, value)
+            elif value is True and self.right.calc_conclusion(str_ccl) is False:
+                self.left.solve(str_ccl, value)
+            elif value is True and self.left.calc_conclusion(str_ccl) is False:
+                self.right.solve(str_ccl, value)
             else:
-                if self.right.calc_expression(str_ccl) is True:
-                    self.left.calc_conclusion(str_ccl, value)
-                elif self.left.calc_expression(str_ccl) is True:
-                    self.right.calc_conclusion(str_ccl, value)
-                else:
-                    self.left.calc_conclusion(str_ccl, "Ambigous")
-                    self.right.calc_conclusion(str_ccl,"Ambigous")
+                self.left.solve(str_ccl, "Ambiguous")
+                self.right.solve(str_ccl, "Ambiguous")
         elif self == '^':
             if value is False:
                 pass
+            #todo: not xor
+            elif value == "Ambiguous":
+                self.left.solve(str_ccl, "Ambiguous")
+                self.right.solve(str_ccl, "Ambiguous")
+            else:
+                right = self.right.calc_conclusion(str_ccl)
+                left = self.left.calc_conclusion(str_ccl)
+                if right is True or right is False:
+                    self.left.solve(str_ccl, not right)
+                elif left is True or left is False:
+                    self.right.solve(str_ccl, not left)
+                else:
+                    self.left.solve(str_ccl, "Ambiguous")
+                    self.right.solve(str_ccl, "Ambiguous")
         elif self == '!':
-            self.right.calc_conclusion(str_ccl, not value)
+            if value == "Ambiguous":
+                self.right.solve(str_ccl, "Ambiguous")
+            else:
+                self.right.solve(str_ccl, not value)
         else:
             self.value = value
 
     def calc(self):
+        print(self)
         display_infos("Token.py", "calc", "97", "Looking for Token " + self.char + "'s value")
         token = self.rules.pop(0)
         if token[0] is not None:
             display_infos("Token.py", "calc", "100", "Looking into Token " + self.char + "'s rule: " + token[1])
             str_rule = token[1].split('=>')
         result = None
-        # todo: expression ambgous
         if token[0] is not None:
             result = token[0].left.calc_expression(str_rule[0])
-        print(self, result, self.value)
-        if result is True or result == 'Ambigous':
-            token[0].right.calc_conclusion(str_rule[1], result)
-        elif self.value is True or self.value == "Ambigous":
-            token[0].right.calc_conclusion(str_rule[1], self.value)
+        if result is True or result == 'Ambiguous':
+            token[0].right.solve(str_rule[1], result)
+        elif self.value is True or self.value == "Ambiguous":
+            token[0].right.solve(str_rule[1], self.value)
         return self.value
 
     def display(self, rules, depth, token=None, tab=[], init=False):
@@ -173,3 +232,7 @@ class Token:
         # todo print
         #if init is False:
             #display_treeV2(tab)
+
+
+
+
