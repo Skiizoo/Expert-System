@@ -27,6 +27,7 @@ class Parse:
                 if current_step is Step.rules:
                     if self.valid_rule(line, i):
                         rule = re.findall(r'=>|.', line)
+
                         self.rules.append(rule)
                         display_infos("Parse.py", "get_params", "31", "Rule: {}".format(rule))
                     else:
