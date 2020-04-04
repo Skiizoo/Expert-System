@@ -2,7 +2,7 @@ E=>A|B
 C=>A|D
 C=>!E
 =C
-?ABD
+?ABDE
 
 #!(A+B)=!A|!B
 #!(A|B)=!A+!B

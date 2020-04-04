@@ -61,7 +61,7 @@ class Token:
             display_infos("Token.py", "@property getter", "58", "Token " + self.char + " is " + str(self.__value))
             return self.__value
         display_infos("Token.py", "@property getter", "60", "We don't know yet the value of Token " + self.char)
-        return self.calc()
+        return self.solve()
 
     @value.setter
     def value(self, new_value):
@@ -70,100 +70,89 @@ class Token:
                 print("error")
                 raise SolveError("Token.py", "@property setter", "66", "Conflict value for Token " + self.char)
             self.__value = new_value
+            self.__value = self.value
             display_infos("Token.py", "@property setter", "68", "Token " + self.char + " is now " + str(new_value))
-            if len(self.rules) > 1:
-                self.__value = self.calc()
 
     @staticmethod
     def add(left, right, value, str_ccl):
         if value is Value.false:
-            if right.calc_conclusion(str_ccl) is Value.true:
-                left.solve(str_ccl, value)
-            elif left.calc_conclusion(str_ccl) is Value.true:
-                right.solve(str_ccl, value)
+            if right.get(str_ccl, ccl=True) is Value.true:
+                left.set(str_ccl, value)
+            elif left.get(str_ccl, ccl=True) is Value.true:
+                right.set(str_ccl, value)
             else:
-                left.solve(str_ccl, Value.ambiguous)
-                right.solve(str_ccl, Value.ambiguous)
+                left.set(str_ccl, Value.ambiguous)
+                right.set(str_ccl, Value.ambiguous)
         else:
-            right.solve(str_ccl, value)
-            left.solve(str_ccl, value)
+            right.set(str_ccl, value)
+            left.set(str_ccl, value)
 
     @staticmethod
     def xor(left, right, value, str_ccl):
         if value is Value.ambiguous:
-            left.solve(str_ccl, value)
-            right.solve(str_ccl, value)
+            left.set(str_ccl, value)
+            right.set(str_ccl, value)
         else:
-            right_ccl = right.calc_conclusion(str_ccl)
-            left_ccl = left.calc_conclusion(str_ccl)
+            right_ccl = right.get(str_ccl, ccl=True)
+            left_ccl = left.get(str_ccl, ccl=True)
             if right_ccl is Value.none and left_ccl is Value.none:
-                left.solve(str_ccl, Value.ambiguous)
-                right.solve(str_ccl, Value.ambiguous)
+                left.set(str_ccl, Value.ambiguous)
+                right.set(str_ccl, Value.ambiguous)
             elif right_ccl is not Value.none:
-                left.solve(str_ccl, right_ccl if value is Value.false else ~right_ccl)
+                left.set(str_ccl, right_ccl if value is Value.false else ~right_ccl)
             elif left_ccl is not Value.none:
-                right.solve(str_ccl, left_ccl if value is Value.false else ~left_ccl)
+                right.set(str_ccl, left_ccl if value is Value.false else ~left_ccl)
 
     @staticmethod
     def oor(left, right, value, str_ccl):
-        if value is Value.true and right.calc_conclusion(str_ccl) is Value.false:
-            left.solve(str_ccl, value)
-        elif value is Value.true and left.calc_conclusion(str_ccl) is Value.false:
-            right.solve(str_ccl, value)
+        if value is Value.true and right.get(str_ccl, ccl=True) is Value.false:
+            left.set(str_ccl, value)
+        elif value is Value.true and left.get(str_ccl, ccl=True) is Value.false:
+            right.set(str_ccl, value)
         elif value is Value.false:
-            left.solve(str_ccl, value)
-            right.solve(str_ccl, value)
+            left.set(str_ccl, value)
+            right.set(str_ccl, value)
         else:
-            left.solve(str_ccl, Value.ambiguous)
-            right.solve(str_ccl, Value.ambiguous)
+            left.set(str_ccl, Value.ambiguous)
+            right.set(str_ccl, Value.ambiguous)
 
-    def calc_expression(self, str_expr):
-        display_infos("Token.py", "calc_expression", "73", "Solving Token " + self.char + " of expression " + str_expr)
+    def get(self, str, ccl=False):
+        display_infos("Token.py", "get", "73", "Solving Token " + self.char + " of expression " + str)
         if self == '!':
-            return ~self.right.calc_expression(str_expr)
+            return ~self.right.get(str, ccl)
         elif self == '|':
-            return self.left.calc_expression(str_expr) | self.right.calc_expression(str_expr)
+            return self.left.get(str, ccl) | self.right.get(str, ccl)
         elif self == '+':
-            return self.left.calc_expression(str_expr) & self.right.calc_expression(str_expr)
+            return self.left.get(str, ccl) & self.right.get(str, ccl)
         elif self == '^':
-            return self.left.calc_expression(str_expr) ^ self.right.calc_expression(str_expr)
-        return Value.default(self.value)
+            return self.left.get(str, ccl) ^ self.right.get(str, ccl)
+        value = self.value
+        if ccl is True:
+            return value if value is not Value.ambiguous else Value.none
+        return value if value is not Value.none else Value.false
 
-    def calc_conclusion(self, str_ccl):
-        display_infos("Token.py", "calc_conclusion", "73", "Solving Token " + self.char + " of expression " + str_ccl)
-        if self == '!':
-            return self.right.calc_conclusion(str_ccl).neg_ccl()
-        elif self == '|':
-            return self.left.calc_conclusion(str_ccl).or_ccl(self.right.calc_conclusion(str_ccl))
-        elif self == '+':
-            return self.left.calc_conclusion(str_ccl).and_ccl(self.right.calc_conclusion(str_ccl))
-        elif self == '^':
-            return self.left.calc_conclusion(str_ccl).xor_ccl(self.right.calc_conclusion(str_ccl))
-        else:
-            return Value.default_ccl(self.value)
-
-    def solve(self, str_ccl, value=Value.true):
-        display_infos("Token.py", "solve", "86", "Solving Token " + self.char + " of conclusion " + str_ccl)
+    def set(self, str, value=Value.true):
+        display_infos("Token.py", "set", "86", "Solving Token " + self.char + " of conclusion " + str)
         if self == '+':
-            self.add(self.left, self.right, value, str_ccl)
+            self.add(self.left, self.right, value, str)
         elif self == '|':
-            self.oor(self.left, self.right, value, str_ccl)
+            self.oor(self.left, self.right, value, str)
         elif self == '^':
-            self.xor(self.left, self.right, value, str_ccl)
+            self.xor(self.left, self.right, value, str)
         elif self == '!':
-            self.right.solve(str_ccl, ~value)
+            self.right.set(str, ~value)
         else:
             self.value = value
 
-    def calc(self):
-        display_infos("Token.py", "calc", "97", "Looking for Token " + self.char + "'s value")
+    def solve(self):
+        display_infos("Token.py", "solve", "97", "Looking for Token " + self.char + "'s value")
         token = self.rules.pop(0)
         if token[0] is not None:
-            display_infos("Token.py", "calc", "100", "Looking into Token " + self.char + "'s rule: " + token[1])
+            display_infos("Token.py", "solve", "100", "Looking into Token " + self.char + "'s rule: " + token[1])
             str_rule = token[1].split('=>')
-            result = token[0].left.calc_expression(str_rule[0])
+            result = token[0].left.get(str_rule[0])
             if result is not Value.false:
-                token[0].right.solve(str_rule[1], result)
+                token[0].right.set(str_rule[1], result)
         return self.value
 
     def display(self, rules, depth, token=None, tab=[], init=False):

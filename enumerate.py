@@ -18,15 +18,17 @@ class Value(Enum):
     def __invert__(self):
         if self is Value.ambiguous:
             return Value.ambiguous
-        elif self is Value.true:
+        if self is Value.none:
+            return Value.none
+        if self is Value.true:
             return Value.false
-        else:
-            return Value.true
-        #return self if self is Value.ambiguous else Value.true if self is Value.false else Value.false
+        return Value.true
 
     def __or__(self, other):
         if self is Value.true or other is Value.true:
             return Value.true
+        if self is Value.none or right is Value.none:
+            return Value.none
         if self is Value.ambiguous or other is Value.ambiguous:
             return Value.ambiguous
         return Value.false
@@ -34,6 +36,8 @@ class Value(Enum):
     def __and__(self, other):
         if self is Value.ambiguous or other is Value.ambiguous:
             return Value.ambiguous
+        if self is Value.none or other is Value.none:
+            return Value.none
         if self is Value.true and other is Value.true:
             return Value.true
         return Value.false
@@ -41,49 +45,11 @@ class Value(Enum):
     def __xor__(self, other):
         if self is Value.ambiguous or other is Value.ambiguous:
             return Value.ambiguous
-        if self is not other:
-            return Value.true
-        return Value.false
-
-    @classmethod
-    def default(cls, value):
-        if value is not cls.none:
-            return value
-        return cls.false
-
-    @classmethod
-    def default_ccl(cls, value):
-        return value if value is not cls.ambiguous else cls.none
-
-    def and_ccl(self, other):
-        if self is Value.none or other is Value.none:
-            return Value.none
-        if self is Value.true and other is Value.true:
-            return Value.true
-        return Value.false
-
-    def neg_ccl(self):
-        if self is Value.none:
-            return Value.none
-        elif self is Value.true:
-            return Value.false
-        return Value.true
-        #return self if self is Value.none else Value.true if self is Value.false else Value.false
-
-    def or_ccl(self, other):
-        if self is Value.true or other is Value.true:
-            return Value.true
-        if self is Value.none or right is Value.none:
-            return Value.none
-        return Value.false
-
-    def xor_ccl(self, other):
         if self is Value.none or other is Value.none:
             return Value.none
         if self is not other:
             return Value.true
         return Value.false
-
 
 class Type(Enum):
     Letter = 0
