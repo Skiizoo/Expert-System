@@ -1,8 +1,9 @@
 E=>A|B
 C=>A|D
-C=>!E
-=C
-?ABDE
+C<=>!E
+F=>!E
+=F
+?ABCDEF
 
 #!(A+B)=!A|!B
 #!(A|B)=!A+!B

@@ -1,4 +1,4 @@
-from display import display_parse_error, display_solve_error
+from display import display_parse_error, display_solve_error, display_file_error
 
 
 class Error(Exception):
@@ -30,4 +30,3 @@ class SolveError(Error):
 
 	def __str__(self):
 		return display_solve_error(self.file, self.func, self.line, self.txt)
-

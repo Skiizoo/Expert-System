@@ -26,10 +26,14 @@ class Parse:
                                                                           "all in one")
                 if current_step is Step.rules:
                     if self.valid_rule(line, i):
-                        rule = re.findall(r'=>|.', line)
-
-                        self.rules.append(rule)
-                        display_infos("Parse.py", "get_params", "31", "Rule: {}".format(rule))
+                        n_line = '=>'.join(line.rsplit('<=>', 1))
+                        rule = re.findall(r'=>|.', n_line)
+                        self.rules.append(rule[:])
+                        display_infos("Parse.py", "get_params", "33", "Rule: {}".format(rule))
+                        if '<=>' in line:
+                            rule = re.findall(r'=>|.', '=>'.join(line.rsplit('<=>', 1)[::-1]))
+                            self.rules.append(rule)
+                            display_infos("Parse.py", "get_params", "35", "Rule: {}".format(rule))
                     else:
                         current_step = next(current_step)
                 if current_step is Step.facts:
@@ -56,7 +60,7 @@ class Parse:
             return False
         if self.valid_query(line, i):
             raise ParseError(self.controller.pathToFile, line, i, "Facts missing")
-        rules = line.split('=>')
+        rules = line.split('<=>') if '<=>' in line else line.split('=>')
         if len(rules) != 2:
             raise ParseError(self.controller.pathToFile, line, i, "Rules isn't well computed")
         for rule in rules:
