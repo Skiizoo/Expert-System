@@ -32,10 +32,11 @@ class Token:
             return instance
         if value not in cls.__instances.keys():
             display_infos("Token.py", "__new__", "22", "Creation of global Token operator " + value)
-            cls.__instances[value] = object.__new__(cls)
-            cls.__instances[value].type = type_token
-            cls.__instances[value].rules = [[None, None]]
-            cls.__instances[value].__value = Value.none
+            new_instance = object.__new__(cls)
+            new_instance.type = type_token
+            new_instance.rules = []
+            new_instance.__value = Value.none
+            cls.__instances[value] = new_instance
         else:
             display_infos("Token.py", "__new__", "28", "Global Token operator " + value + " already exists")
         return cls.__instances[value]
@@ -55,23 +56,27 @@ class Token:
     def __eq__(self, other):
         return self.char == other
 
+
     @property
     def value(self):
-        if len(self.rules) == 1:
-            display_infos("Token.py", "@property getter", "58", "Token " + self.char + " is " + str(self.__value))
-            return self.__value
-        display_infos("Token.py", "@property getter", "60", "We don't know yet the value of Token " + self.char)
-        return self.solve()
+        if len(self.rules):
+            display_infos("Token.py", "@property getter", "60", "We don't know yet the value of Token " + self.char)
+            rule = self.rules.pop(0)
+            str_rule = rule[1].split('=>')
+            result = rule[0].left.get(str_rule[0])
+            if result is not Value.false:
+                rule[0].right.set(str_rule[1], result)
+        display_infos("Token.py", "@property getter", "58", "Token " + self.char + " is " + str(self.__value))
+        return self.__value
 
     @value.setter
     def value(self, new_value):
         if new_value != Value.ambiguous or self.__value is Value.none:
-            if self.__value is not Value.none and self.__value is not Value.ambiguous and self.__value is not new_value:
-                print("error")
+            if self.__value is Value.none or self.__value is Value.ambiguous or new_value is self.value:
+                display_infos("Token.py", "@property setter", "68", "Token " + self.char + " is now " + str(new_value))
+                self.__value = new_value
+            else:
                 raise SolveError("Token.py", "@property setter", "66", "Conflict value for Token " + self.char)
-            self.__value = new_value
-            self.__value = self.value
-            display_infos("Token.py", "@property setter", "68", "Token " + self.char + " is now " + str(new_value))
 
     @staticmethod
     def add(left, right, value, str_ccl):
@@ -95,13 +100,13 @@ class Token:
         else:
             right_ccl = right.get(str_ccl, ccl=True)
             left_ccl = left.get(str_ccl, ccl=True)
-            if right_ccl is Value.none and left_ccl is Value.none:
+            if right_ccl is Value.true or right_ccl is Value.false:
+                left.set(str_ccl, right_ccl if value is Value.false else ~right_ccl)
+            elif left_ccl is Value.true or left_ccl is Value.false:
+                right.set(str_ccl, left_ccl if value is Value.false else ~left_ccl)
+            else:
                 left.set(str_ccl, Value.ambiguous)
                 right.set(str_ccl, Value.ambiguous)
-            elif right_ccl is not Value.none:
-                left.set(str_ccl, right_ccl if value is Value.false else ~right_ccl)
-            elif left_ccl is not Value.none:
-                right.set(str_ccl, left_ccl if value is Value.false else ~left_ccl)
 
     @staticmethod
     def oor(left, right, value, str_ccl):
@@ -127,9 +132,9 @@ class Token:
         elif self == '^':
             return self.left.get(str, ccl) ^ self.right.get(str, ccl)
         value = self.value
-        if ccl is True:
-            return value if value is not Value.ambiguous else Value.none
-        return value if value is not Value.none else Value.false
+        if ccl is False:
+             return value if value is not Value.none else Value.false
+        return value
 
     def set(self, str, value=Value.true):
         display_infos("Token.py", "set", "86", "Solving Token " + self.char + " of conclusion " + str)
@@ -143,17 +148,6 @@ class Token:
             self.right.set(str, ~value)
         else:
             self.value = value
-
-    def solve(self):
-        display_infos("Token.py", "solve", "97", "Looking for Token " + self.char + "'s value")
-        token = self.rules.pop(0)
-        if token[0] is not None:
-            display_infos("Token.py", "solve", "100", "Looking into Token " + self.char + "'s rule: " + token[1])
-            str_rule = token[1].split('=>')
-            result = token[0].left.get(str_rule[0])
-            if result is not Value.false:
-                token[0].right.set(str_rule[1], result)
-        return self.value
 
     def display(self, rules, depth, token=None, tab=[], init=False):
         if token is not None:

@@ -2,18 +2,13 @@ from enum import Enum
 
 
 class Value(Enum):
-    false = 0,
-    true = 1,
-    ambiguous = 2,
-    none = 3
+    false = "False"
+    true = "True"
+    ambiguous = "Ambiguous"
+    none = "None"
 
     def __str__(self):
-        switch = {
-            Value.false: "False",
-            Value.true: "True",
-            Value.ambiguous: "Ambiguous"
-        }
-        return switch.get(self, "False")
+        return self.value if self is not self.none else self.false.value
 
     def __invert__(self):
         if self is Value.ambiguous:
