@@ -1,3 +1,5 @@
+from enumerate import Type
+
 debug = None
 tree = None
 
@@ -55,13 +57,38 @@ def display_file_error(file):
         BOLDnRED=Bcolors.BOLDnRED, END=Bcolors.END, FAIL=Bcolors.FAIL, TYPE="SOLVING ERROR", FILE=file)
 
 
-def display_tree(token, tab):
+def display_tree(char, rules, tab=[], depth=0, token=None, init=False):
     if tree is True:
-        if len(tab) > 0:
+        if token is not None:
+            if depth > len(tab):
+                tab.append([])
+            if token.type is Type.Operator:
+                if token.char != "!":
+                    display_tree(char, rules, tab, depth + 1, token.left, True)
+                tab[depth - 1].append([token.char, my_max(tab) + 1])
+                display_tree(char, rules, tab, depth + 1, token.right, True)
+                if depth == 1 and len(rules) > 1:
+                    display_tree(char, rules, tab, 1, rules.pop(0)[0], True)
+            elif token.type is Type.Letter:
+                tab[depth - 1].append([token.char, my_max(tab) + 1])
+        elif depth == 0 and len(rules) > 1:
+            display_tree(char, rules, tab, 1, rules.pop(0)[0], True)
+        if init is False and len(tab) > 0:
             print('{BOLDnBLUE} Representation of {TOKEN}\'s trees {END}'.format(
-                BOLDnBLUE=Bcolors.BOLDnBLUE, END=Bcolors.END, TOKEN=token))
+                BOLDnBLUE=Bcolors.BOLDnBLUE, END=Bcolors.END, TOKEN=char))
             print('\n'.join([''.join(['{BLUE}{TOKEN:>{POS}}{END}'.format(BLUE=Bcolors.BLUE, END=Bcolors.END,
                                                                          TOKEN=item[0],
                                                                          POS=item[1] * 3 - row[w - 1][1] * 3
                                                                          if w > 0 else item[1] * 3) for w, item in
-                            enumerate(row)]) for row in tab]))
+                                      enumerate(row)]) for row in tab]))
+
+
+def my_max(tab):
+    maximum = 0
+    if not tab:
+        return maximum
+    for t in tab:
+        for j in t:
+            if maximum < j[1]:
+                maximum = j[1]
+    return maximum
