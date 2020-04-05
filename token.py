@@ -1,5 +1,5 @@
 from enumerate import Type, Value
-from display import display_infos, display_tree, display_treeV2
+from display import display_infos, display_tree
 from error import SolveError
 import re
 
@@ -166,23 +166,20 @@ class Token:
                 token[0].right.solve(str_rule[1], result)
         return self.value
 
-    def display(self, rules, depth, token=None, tab=[], init=False):
+    def display(self, rules, tab=[], depth=0, token=None, init=False):
         if token is not None:
             if depth > len(tab):
                 tab.append([])
-            if depth == 0 and len(rules) > 1:
-                self.display(rules, 1, rules.pop(0)[0], tab, True)
-            elif token.type is Type.Operator:
-                self.display(rules, depth + 1, token.right, tab, True)
-                display_tree(token.char, depth)
+            if token.type is Type.Operator:
+                if token.char != "!":
+                    self.display(rules, tab, depth + 1, token.left, True)
                 tab[depth - 1].append([token.char, my_max(tab) + 1])
-                if self.char != "!":
-                    self.display(rules, depth + 1, token.left, tab, True)
+                self.display(rules, tab, depth + 1, token.right, True)
                 if depth == 1 and len(rules) > 1:
-                    self.display(rules, 1, rules.pop(0)[0], tab, True)
+                    self.display(rules, tab, 1, rules.pop(0)[0], True)
             elif token.type is Type.Letter:
-                display_tree(token.char, depth)
                 tab[depth - 1].append([token.char, my_max(tab) + 1])
-        # todo print
-        # if init is False:
-        # display_treeV2(tab)
+        elif depth == 0 and len(rules) > 1:
+            self.display(rules, tab, 1, rules.pop(0)[0], True)
+        if init is False:
+            display_tree(self.char, tab)

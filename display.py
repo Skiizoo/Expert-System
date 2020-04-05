@@ -32,7 +32,7 @@ def display_infos(file, func, line, txt):
 def display_parse_error(file, line, i, txt, j):
     if j is not None:
         line = '{FAIL}{S_LINE}{END}{BOLDnRED}{I_CHAR}{END}{FAIL}{E_LINE}{END}'.format(
-            END=Bcolors.END, BOLDnRED=Bcolors.UNDnRED, FAIL=Bcolors.FAIL, S_LINE=line[:j - 1], I_CHAR=line[j-1],
+            END=Bcolors.END, BOLDnRED=Bcolors.UNDnRED, FAIL=Bcolors.FAIL, S_LINE=line[:j - 1], I_CHAR=line[j - 1],
             E_LINE=line[j:])
     return ('{BOLDnRED} {TYPE:26} {END}'
             '{BOLDnRED} File: {END} {FAIL} {FILE:21} {END}'
@@ -50,15 +50,18 @@ def display_solve_error(file, func, line, txt):
         LINE=line, TXT=txt)
 
 
-def display_tree(token, depth):
-    if tree is True:
-        print('{BOLD}{TOKEN:>{DEPTH}}{END}'.format(BOLD=Bcolors.BOLD, END=Bcolors.END, TOKEN=token, DEPTH=(depth+1)*3))
+def display_file_error(file):
+    return '{BOLDnRED} No such file: {END} {FAIL} \'  \' {END}'.format(
+        BOLDnRED=Bcolors.BOLDnRED, END=Bcolors.END, FAIL=Bcolors.FAIL, TYPE="SOLVING ERROR", FILE=file)
 
 
-def display_treeV2(tab):
-    print("display")
+def display_tree(token, tab):
     if tree is True:
-        for row in tab:
-            maximum = max(row, key=lambda x: x[1])[1]
-            print(maximum)
-            # print('\n'.join([''.join(['{TOKEN:>{POS}}'.format(TOKEN=item[0], POS=item[1]*2) for item in row]) for row in tab]))
+        if len(tab) > 0:
+            print('{BOLDnBLUE} Representation of {TOKEN}\'s trees {END}'.format(
+                BOLDnBLUE=Bcolors.BOLDnBLUE, END=Bcolors.END, TOKEN=token))
+            print('\n'.join([''.join(['{BLUE}{TOKEN:>{POS}}{END}'.format(BLUE=Bcolors.BLUE, END=Bcolors.END,
+                                                                         TOKEN=item[0],
+                                                                         POS=item[1] * 3 - row[w - 1][1] * 3
+                                                                         if w > 0 else item[1] * 3) for w, item in
+                            enumerate(row)]) for row in tab]))

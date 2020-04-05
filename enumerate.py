@@ -20,9 +20,7 @@ class Value(Enum):
             return Value.ambiguous
         elif self is Value.true:
             return Value.false
-        else:
-            return Value.true
-        #return self if self is Value.ambiguous else Value.true if self is Value.false else Value.false
+        return Value.true
 
     def __or__(self, other):
         if self is Value.true or other is Value.true:
@@ -73,7 +71,7 @@ class Value(Enum):
     def or_ccl(self, other):
         if self is Value.true or other is Value.true:
             return Value.true
-        if self is Value.none or right is Value.none:
+        if self is Value.none or other is Value.none:
             return Value.none
         return Value.false
 
@@ -99,8 +97,8 @@ class Type(Enum):
             return cls.RightParen
         elif value.isupper():
             return cls.Letter
-        else:
-            return cls.Operator
+        return cls.Operator
+
 
 class Step(Enum):
     rules = 0
