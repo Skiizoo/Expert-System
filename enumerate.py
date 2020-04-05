@@ -22,7 +22,7 @@ class Value(Enum):
     def __or__(self, other):
         if self is Value.true or other is Value.true:
             return Value.true
-        if self is Value.none or right is Value.none:
+        if self is Value.none or other is Value.none:
             return Value.none
         if self is Value.ambiguous or other is Value.ambiguous:
             return Value.ambiguous
@@ -46,6 +46,7 @@ class Value(Enum):
             return Value.true
         return Value.false
 
+
 class Type(Enum):
     Letter = 0
     Operator = 1
@@ -60,8 +61,8 @@ class Type(Enum):
             return cls.RightParen
         elif value.isupper():
             return cls.Letter
-        else:
-            return cls.Operator
+        return cls.Operator
+
 
 class Step(Enum):
     rules = 0

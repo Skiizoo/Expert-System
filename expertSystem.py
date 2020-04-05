@@ -1,5 +1,5 @@
 from rule import Rule
-from display import display_result, display_infos
+from display import display_result, display_infos, display_tree
 from token import Token
 from enumerate import Value
 
@@ -13,7 +13,7 @@ class ExpertSystem:
 			Rule(rule)
 		for query in parser.queries:
 			rules = Token(query).rules[:]
-			Token(query).display(rules, [])
+			display_tree(query, rules, [])
 		display_infos("ExpertSystem.py", "__init__", "17", "Assigning Facts value at True")
 		for fact in parser.facts:
 			Token(fact).value = Value.true

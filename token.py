@@ -1,18 +1,6 @@
 from enumerate import Type, Value
-from display import display_infos, display_tree, display_treeV2
+from display import display_infos
 from error import SolveError
-import re
-
-
-def my_max(tab):
-    maximum = 0
-    if not tab:
-        return maximum
-    for t in tab:
-        for j in t:
-            if maximum < j[1]:
-                maximum = j[1]
-    return maximum
 
 
 class Token:
@@ -125,15 +113,15 @@ class Token:
         display_infos("Token.py", "get", "73", "Solving Token " + self.char + " of expression " + str)
         if self == '!':
             return ~self.right.get(str, ccl)
-        elif self == '|':
+        if self == '|':
             return self.left.get(str, ccl) | self.right.get(str, ccl)
-        elif self == '+':
+        if self == '+':
             return self.left.get(str, ccl) & self.right.get(str, ccl)
-        elif self == '^':
+        if self == '^':
             return self.left.get(str, ccl) ^ self.right.get(str, ccl)
         value = self.value
         if ccl is False:
-             return value if value is not Value.none else Value.false
+            return value if value is not Value.none else Value.false
         return value
 
     def set(self, str, value=Value.true):
@@ -148,24 +136,3 @@ class Token:
             self.right.set(str, ~value)
         else:
             self.value = value
-
-    def display(self, rules, depth, token=None, tab=[], init=False):
-        if token is not None:
-            if depth > len(tab):
-                tab.append([])
-            if depth == 0 and len(rules) > 1:
-                self.display(rules, 1, rules.pop(0)[0], tab, True)
-            elif token.type is Type.Operator:
-                self.display(rules, depth + 1, token.right, tab, True)
-                display_tree(token.char, depth)
-                tab[depth - 1].append([token.char, my_max(tab) + 1])
-                if self.char != "!":
-                    self.display(rules, depth + 1, token.left, tab, True)
-                if depth == 1 and len(rules) > 1:
-                    self.display(rules, 1, rules.pop(0)[0], tab, True)
-            elif token.type is Type.Letter:
-                display_tree(token.char, depth)
-                tab[depth - 1].append([token.char, my_max(tab) + 1])
-        # todo print
-        # if init is False:
-        # display_treeV2(tab)
