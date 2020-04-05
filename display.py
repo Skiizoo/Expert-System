@@ -67,11 +67,11 @@ def display_tree(char, rules, tab=[], depth=0, token=None, init=False):
                     display_tree(char, rules, tab, depth + 1, token.left, True)
                 tab[depth - 1].append([token.char, my_max(tab) + 1])
                 display_tree(char, rules, tab, depth + 1, token.right, True)
-                if depth == 1 and len(rules) > 1:
+                if depth == 1 and len(rules) > 0:
                     display_tree(char, rules, tab, 1, rules.pop(0)[0], True)
             elif token.type is Type.Letter:
                 tab[depth - 1].append([token.char, my_max(tab) + 1])
-        elif depth == 0 and len(rules) > 1:
+        elif depth == 0 and len(rules) > 0:
             display_tree(char, rules, tab, 1, rules.pop(0)[0], True)
         if init is False and len(tab) > 0:
             print('{BOLDnBLUE} Representation of {TOKEN}\'s trees {END}'.format(
